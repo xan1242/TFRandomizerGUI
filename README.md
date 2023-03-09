@@ -28,4 +28,10 @@ Currently this tool only supports Tag Force 3. More games are to come as their p
 
 - Disk space for at least 3x your ISO size (original data + tool cached data + result data)
 
+## TODO
 
+- Support for other games
+
+- Lots and lots of testing
+
+- More randomization features (this is entirely dependant on TFRandomizer)
