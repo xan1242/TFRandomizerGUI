@@ -32,6 +32,7 @@
             menuStrip1 = new MenuStrip();
             fileToolStripMenuItem = new ToolStripMenuItem();
             exitToolStripMenuItem = new ToolStripMenuItem();
+            tbSeed = new FastTextBox();
             label1 = new Label();
             groupBox1 = new GroupBox();
             button1 = new Button();
@@ -46,7 +47,11 @@
             cbPackCountRange = new CheckBox();
             label6 = new Label();
             cbPackPriceRange = new CheckBox();
+            tbMinCount = new FastTextBox();
+            tbMaxCount = new FastTextBox();
             label4 = new Label();
+            tbMinPrice = new FastTextBox();
+            tbMaxPrice = new FastTextBox();
             btInitSetup = new Button();
             btRandomize = new Button();
             timer1 = new System.Windows.Forms.Timer(components);
@@ -83,6 +88,15 @@
             exitToolStripMenuItem.Text = "Exit";
             exitToolStripMenuItem.Click += exitToolStripMenuItem_Click;
             // 
+            // tbSeed
+            // 
+            tbSeed.Hint = "";
+            tbSeed.Location = new Point(67, 51);
+            tbSeed.Name = "tbSeed";
+            tbSeed.Size = new Size(123, 23);
+            tbSeed.TabIndex = 1;
+            tbSeed.TextAcceptor = null;
+            // 
             // label1
             // 
             label1.AutoSize = true;
@@ -97,6 +111,7 @@
             groupBox1.Controls.Add(label1);
             groupBox1.Controls.Add(button1);
             groupBox1.Controls.Add(comboBox1);
+            groupBox1.Controls.Add(tbSeed);
             groupBox1.Controls.Add(label2);
             groupBox1.Location = new Point(12, 27);
             groupBox1.Name = "groupBox1";
@@ -199,7 +214,11 @@
             groupBox3.Controls.Add(cbPackCountRange);
             groupBox3.Controls.Add(label6);
             groupBox3.Controls.Add(cbPackPriceRange);
+            groupBox3.Controls.Add(tbMinCount);
+            groupBox3.Controls.Add(tbMaxCount);
             groupBox3.Controls.Add(label4);
+            groupBox3.Controls.Add(tbMinPrice);
+            groupBox3.Controls.Add(tbMaxPrice);
             groupBox3.Location = new Point(13, 253);
             groupBox3.Name = "groupBox3";
             groupBox3.Size = new Size(279, 100);
@@ -242,6 +261,24 @@
             cbPackPriceRange.UseVisualStyleBackColor = true;
             cbPackPriceRange.CheckedChanged += cbPackPriceRange_CheckedChanged;
             // 
+            // tbMinCount
+            // 
+            tbMinCount.Hint = "";
+            tbMinCount.Location = new Point(183, 63);
+            tbMinCount.Name = "tbMinCount";
+            tbMinCount.Size = new Size(41, 23);
+            tbMinCount.TabIndex = 5;
+            tbMinCount.TextAcceptor = null;
+            // 
+            // tbMaxCount
+            // 
+            tbMaxCount.Hint = "";
+            tbMaxCount.Location = new Point(230, 63);
+            tbMaxCount.Name = "tbMaxCount";
+            tbMaxCount.Size = new Size(41, 23);
+            tbMaxCount.TabIndex = 7;
+            tbMaxCount.TextAcceptor = null;
+            // 
             // label4
             // 
             label4.AutoSize = true;
@@ -250,6 +287,24 @@
             label4.Size = new Size(28, 15);
             label4.TabIndex = 4;
             label4.Text = "Min";
+            // 
+            // tbMinPrice
+            // 
+            tbMinPrice.Hint = "";
+            tbMinPrice.Location = new Point(183, 34);
+            tbMinPrice.Name = "tbMinPrice";
+            tbMinPrice.Size = new Size(41, 23);
+            tbMinPrice.TabIndex = 1;
+            tbMinPrice.TextAcceptor = null;
+            // 
+            // tbMaxPrice
+            // 
+            tbMaxPrice.Hint = "";
+            tbMaxPrice.Location = new Point(230, 34);
+            tbMaxPrice.Name = "tbMaxPrice";
+            tbMaxPrice.Size = new Size(41, 23);
+            tbMaxPrice.TabIndex = 3;
+            tbMaxPrice.TextAcceptor = null;
             // 
             // btInitSetup
             // 
