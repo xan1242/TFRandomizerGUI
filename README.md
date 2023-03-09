@@ -20,6 +20,14 @@ Currently this tool only supports Tag Force 3. More games are to come as their p
 
 5. Load the ISO in your emulator of choice (real PSP hardware untested, TODO)
 
+
+
+To see the effects of the recipe randomizer, you must start a new game. The recipe randomization will not work on a saved game.
+
+
+
+
+
 ## Requirements
 
 - [.NET Desktop Runtime 6.0](https://dotnet.microsoft.com/en-us/download/dotnet/6.0) for your platform (most likely x64)
