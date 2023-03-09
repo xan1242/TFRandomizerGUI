@@ -1,0 +1,6 @@
+[submodule "TFRandomizer"]
+	path = TFRandomizer
+	url = https://github.com/xan1242/TFRandomizer
+[submodule "ehppack"]
+	path = ehppack
+	url = https://github.com/xan1242/ehppack
