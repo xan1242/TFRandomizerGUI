@@ -44,6 +44,7 @@
             radioShuffle = new RadioButton();
             cbDeckRandom = new CheckBox();
             groupBox3 = new GroupBox();
+            cbBoxRandomize = new CheckBox();
             cbPackCountRange = new CheckBox();
             label6 = new Label();
             cbPackPriceRange = new CheckBox();
@@ -59,6 +60,7 @@
             lbWarningNote = new Label();
             sfDialogRandomizer = new SaveFileDialog();
             lbWaitText = new Label();
+            cbBanlist = new CheckBox();
             menuStrip1.SuspendLayout();
             groupBox1.SuspendLayout();
             groupBox2.SuspendLayout();
@@ -211,6 +213,7 @@
             // 
             // groupBox3
             // 
+            groupBox3.Controls.Add(cbBoxRandomize);
             groupBox3.Controls.Add(cbPackCountRange);
             groupBox3.Controls.Add(label6);
             groupBox3.Controls.Add(cbPackPriceRange);
@@ -221,17 +224,30 @@
             groupBox3.Controls.Add(tbMaxPrice);
             groupBox3.Location = new Point(13, 253);
             groupBox3.Name = "groupBox3";
-            groupBox3.Size = new Size(279, 100);
+            groupBox3.Size = new Size(279, 108);
             groupBox3.TabIndex = 5;
             groupBox3.TabStop = false;
             groupBox3.Text = "Card Shop Boxes";
+            // 
+            // cbBoxRandomize
+            // 
+            cbBoxRandomize.AutoSize = true;
+            cbBoxRandomize.Checked = true;
+            cbBoxRandomize.CheckState = CheckState.Checked;
+            cbBoxRandomize.Location = new Point(6, 22);
+            cbBoxRandomize.Name = "cbBoxRandomize";
+            cbBoxRandomize.Size = new Size(68, 19);
+            cbBoxRandomize.TabIndex = 9;
+            cbBoxRandomize.Text = "Enabled";
+            cbBoxRandomize.UseVisualStyleBackColor = true;
+            cbBoxRandomize.CheckedChanged += cbBoxRandomize_CheckedChanged;
             // 
             // cbPackCountRange
             // 
             cbPackCountRange.AutoSize = true;
             cbPackCountRange.Checked = true;
             cbPackCountRange.CheckState = CheckState.Checked;
-            cbPackCountRange.Location = new Point(6, 65);
+            cbPackCountRange.Location = new Point(6, 76);
             cbPackCountRange.Name = "cbPackCountRange";
             cbPackCountRange.Size = new Size(176, 19);
             cbPackCountRange.TabIndex = 6;
@@ -242,7 +258,7 @@
             // label6
             // 
             label6.AutoSize = true;
-            label6.Location = new Point(230, 16);
+            label6.Location = new Point(230, 27);
             label6.Name = "label6";
             label6.Size = new Size(30, 15);
             label6.TabIndex = 8;
@@ -253,7 +269,7 @@
             cbPackPriceRange.AutoSize = true;
             cbPackPriceRange.Checked = true;
             cbPackPriceRange.CheckState = CheckState.Checked;
-            cbPackPriceRange.Location = new Point(6, 36);
+            cbPackPriceRange.Location = new Point(6, 47);
             cbPackPriceRange.Name = "cbPackPriceRange";
             cbPackPriceRange.Size = new Size(171, 19);
             cbPackPriceRange.TabIndex = 3;
@@ -264,7 +280,7 @@
             // tbMinCount
             // 
             tbMinCount.Hint = "";
-            tbMinCount.Location = new Point(183, 63);
+            tbMinCount.Location = new Point(183, 74);
             tbMinCount.Name = "tbMinCount";
             tbMinCount.Size = new Size(41, 23);
             tbMinCount.TabIndex = 5;
@@ -273,7 +289,7 @@
             // tbMaxCount
             // 
             tbMaxCount.Hint = "";
-            tbMaxCount.Location = new Point(230, 63);
+            tbMaxCount.Location = new Point(230, 74);
             tbMaxCount.Name = "tbMaxCount";
             tbMaxCount.Size = new Size(41, 23);
             tbMaxCount.TabIndex = 7;
@@ -282,7 +298,7 @@
             // label4
             // 
             label4.AutoSize = true;
-            label4.Location = new Point(183, 16);
+            label4.Location = new Point(183, 27);
             label4.Name = "label4";
             label4.Size = new Size(28, 15);
             label4.TabIndex = 4;
@@ -291,7 +307,7 @@
             // tbMinPrice
             // 
             tbMinPrice.Hint = "";
-            tbMinPrice.Location = new Point(183, 34);
+            tbMinPrice.Location = new Point(183, 45);
             tbMinPrice.Name = "tbMinPrice";
             tbMinPrice.Size = new Size(41, 23);
             tbMinPrice.TabIndex = 1;
@@ -300,7 +316,7 @@
             // tbMaxPrice
             // 
             tbMaxPrice.Hint = "";
-            tbMaxPrice.Location = new Point(230, 34);
+            tbMaxPrice.Location = new Point(230, 45);
             tbMaxPrice.Name = "tbMaxPrice";
             tbMaxPrice.Size = new Size(41, 23);
             tbMaxPrice.TabIndex = 3;
@@ -308,7 +324,7 @@
             // 
             // btInitSetup
             // 
-            btInitSetup.Location = new Point(12, 466);
+            btInitSetup.Location = new Point(12, 484);
             btInitSetup.Name = "btInitSetup";
             btInitSetup.Size = new Size(98, 23);
             btInitSetup.TabIndex = 6;
@@ -318,7 +334,7 @@
             // 
             // btRandomize
             // 
-            btRandomize.Location = new Point(12, 374);
+            btRandomize.Location = new Point(12, 392);
             btRandomize.Name = "btRandomize";
             btRandomize.Size = new Size(280, 23);
             btRandomize.TabIndex = 7;
@@ -341,7 +357,7 @@
             // lbWarningNote
             // 
             lbWarningNote.AutoSize = true;
-            lbWarningNote.Location = new Point(12, 433);
+            lbWarningNote.Location = new Point(12, 451);
             lbWarningNote.Name = "lbWarningNote";
             lbWarningNote.Size = new Size(187, 30);
             lbWarningNote.TabIndex = 8;
@@ -357,17 +373,28 @@
             // lbWaitText
             // 
             lbWaitText.AutoSize = true;
-            lbWaitText.Location = new Point(12, 400);
+            lbWaitText.Location = new Point(12, 418);
             lbWaitText.Name = "lbWaitText";
             lbWaitText.Size = new Size(143, 15);
             lbWaitText.TabIndex = 9;
             lbWaitText.Text = "Packing ISO, please wait...";
             // 
+            // cbBanlist
+            // 
+            cbBanlist.AutoSize = true;
+            cbBanlist.Location = new Point(13, 367);
+            cbBanlist.Name = "cbBanlist";
+            cbBanlist.Size = new Size(99, 19);
+            cbBanlist.TabIndex = 10;
+            cbBanlist.Text = "Enable banlist";
+            cbBanlist.UseVisualStyleBackColor = true;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(304, 501);
+            ClientSize = new Size(304, 519);
+            Controls.Add(cbBanlist);
             Controls.Add(lbWaitText);
             Controls.Add(lbWarningNote);
             Controls.Add(btRandomize);
@@ -427,5 +454,7 @@
         private Label lbWaitText;
         private CheckBox cbPackCountRange;
         private CheckBox cbPackPriceRange;
+        private CheckBox cbBoxRandomize;
+        private CheckBox cbBanlist;
     }
 }

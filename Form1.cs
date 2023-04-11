@@ -98,8 +98,8 @@ namespace TFRandomizerGUI
         private void PrepareGameData(string InFilename, string OutFolder)
         {
             string ISOoutfolder = OutFolder + "/gamedata";
-            string EBOOTfile = OutFolder + "/EBOOT.BIN";
-            string EBOOTdest = OutFolder + "/gamedata/PSP_GAME/SYSDIR/EBOOT.BIN";
+            //string EBOOTfile = OutFolder + "/EBOOT.BIN";
+            //string EBOOTdest = OutFolder + "/gamedata/PSP_GAME/SYSDIR/EBOOT.BIN";
 
             if (!Directory.Exists(ISOoutfolder))
                 Directory.CreateDirectory(ISOoutfolder);
@@ -110,7 +110,7 @@ namespace TFRandomizerGUI
             }
 
             ExtractISO(InFilename, ISOoutfolder);
-            File.Copy(EBOOTfile, EBOOTdest, true);
+            //File.Copy(EBOOTfile, EBOOTdest, true);
         }
 
         private void InitializerOpenFile(string FileName)
@@ -123,6 +123,14 @@ namespace TFRandomizerGUI
         private void StartRandomizer(string GameFolder, string OutISOName)
         {
             int theseed = Int32.Parse(tbSeed.Text);
+
+            string EBOOTfile = GameFolder + "/EBOOT.BIN";
+            if (!cbBanlist.Checked)
+                EBOOTfile = GameFolder + "/EBOOT_NoBanlist.BIN";
+
+            string EBOOTdest = GameFolder + "/gamedata/PSP_GAME/SYSDIR/EBOOT.BIN";
+
+            File.Copy(EBOOTfile, EBOOTdest, true);
 
             if (cbDeckRandom.Checked)
             {
@@ -145,7 +153,7 @@ namespace TFRandomizerGUI
                 PackEHP(OutRecipeFolder, OutRecipeEHP);
             }
 
-            if (cbPackPriceRange.Checked || cbPackCountRange.Checked)
+            if (cbBoxRandomize.Checked)
             {
                 lbWaitText.Text = "Randomizing card boxes...";
 
@@ -286,6 +294,18 @@ namespace TFRandomizerGUI
         {
             tbMinCount.Enabled = cbPackCountRange.Checked;
             tbMaxCount.Enabled = cbPackCountRange.Checked;
+        }
+
+        private void cbBoxRandomize_CheckedChanged(object sender, EventArgs e)
+        {
+            cbPackPriceRange.Enabled = cbBoxRandomize.Checked;
+            cbPackCountRange.Enabled = cbBoxRandomize.Checked;
+            label4.Enabled = cbBoxRandomize.Checked;
+            label6.Enabled = cbBoxRandomize.Checked;
+            tbMinPrice.Enabled = cbBoxRandomize.Checked;
+            tbMinCount.Enabled = cbBoxRandomize.Checked;
+            tbMaxPrice.Enabled = cbBoxRandomize.Checked;
+            tbMaxCount.Enabled = cbBoxRandomize.Checked;
         }
     }
 }
