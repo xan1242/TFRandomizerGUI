@@ -1,0 +1,8 @@
+YgSys_GetLimitation
+to (nop):
+lbu     $v0, 2($v0)
+andi    $v0, 3
+
+YgSys_GetLimitation_Default
+to (li $v0, 3):
+lhu     $v0, 0($v0)

@@ -44,6 +44,7 @@
             radioShuffle = new RadioButton();
             cbDeckRandom = new CheckBox();
             groupBox3 = new GroupBox();
+            lbToolTipPackCount = new LinkLabel();
             cbBoxRandomize = new CheckBox();
             cbPackCountRange = new CheckBox();
             label6 = new Label();
@@ -61,6 +62,9 @@
             sfDialogRandomizer = new SaveFileDialog();
             lbWaitText = new Label();
             cbBanlist = new CheckBox();
+            progressBar1 = new ProgressBar();
+            lbISOPercent = new Label();
+            toolTip1 = new ToolTip(components);
             menuStrip1.SuspendLayout();
             groupBox1.SuspendLayout();
             groupBox2.SuspendLayout();
@@ -136,13 +140,13 @@
             // 
             comboBox1.DisplayMember = "0";
             comboBox1.FormattingEnabled = true;
-            comboBox1.Items.AddRange(new object[] { "Tag Force 3 (ULES-01183)" });
             comboBox1.Location = new Point(67, 22);
             comboBox1.Name = "comboBox1";
             comboBox1.Size = new Size(207, 23);
             comboBox1.TabIndex = 4;
             comboBox1.Text = "Tag Force 3 (ULES-01183)";
             comboBox1.ValueMember = "0";
+            comboBox1.SelectionChangeCommitted += comboBox1_SelectionChangeCommitted;
             // 
             // label2
             // 
@@ -213,6 +217,7 @@
             // 
             // groupBox3
             // 
+            groupBox3.Controls.Add(lbToolTipPackCount);
             groupBox3.Controls.Add(cbBoxRandomize);
             groupBox3.Controls.Add(cbPackCountRange);
             groupBox3.Controls.Add(label6);
@@ -228,6 +233,16 @@
             groupBox3.TabIndex = 5;
             groupBox3.TabStop = false;
             groupBox3.Text = "Card Shop Boxes";
+            // 
+            // lbToolTipPackCount
+            // 
+            lbToolTipPackCount.AutoSize = true;
+            lbToolTipPackCount.Location = new Point(146, 77);
+            lbToolTipPackCount.Name = "lbToolTipPackCount";
+            lbToolTipPackCount.Size = new Size(20, 15);
+            lbToolTipPackCount.TabIndex = 10;
+            lbToolTipPackCount.TabStop = true;
+            lbToolTipPackCount.Text = "(?)";
             // 
             // cbBoxRandomize
             // 
@@ -249,9 +264,9 @@
             cbPackCountRange.CheckState = CheckState.Checked;
             cbPackCountRange.Location = new Point(6, 76);
             cbPackCountRange.Name = "cbPackCountRange";
-            cbPackCountRange.Size = new Size(176, 19);
+            cbPackCountRange.Size = new Size(144, 19);
             cbPackCountRange.TabIndex = 6;
-            cbPackCountRange.Text = "Pack count range (1 - 16383)";
+            cbPackCountRange.Text = "Cards per pack (1 - 63)";
             cbPackCountRange.UseVisualStyleBackColor = true;
             cbPackCountRange.CheckedChanged += cbPackCountRange_CheckedChanged;
             // 
@@ -389,11 +404,40 @@
             cbBanlist.Text = "Enable banlist";
             cbBanlist.UseVisualStyleBackColor = true;
             // 
+            // progressBar1
+            // 
+            progressBar1.Location = new Point(13, 451);
+            progressBar1.Name = "progressBar1";
+            progressBar1.Size = new Size(279, 23);
+            progressBar1.TabIndex = 11;
+            progressBar1.Visible = false;
+            // 
+            // lbISOPercent
+            // 
+            lbISOPercent.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            lbISOPercent.AutoSize = true;
+            lbISOPercent.Location = new Point(248, 477);
+            lbISOPercent.Name = "lbISOPercent";
+            lbISOPercent.Size = new Size(32, 15);
+            lbISOPercent.TabIndex = 12;
+            lbISOPercent.Text = "0.0%";
+            lbISOPercent.TextAlign = ContentAlignment.TopRight;
+            lbISOPercent.UseMnemonic = false;
+            lbISOPercent.Visible = false;
+            // 
+            // toolTip1
+            // 
+            toolTip1.AutomaticDelay = 0;
+            toolTip1.UseAnimation = false;
+            toolTip1.UseFading = false;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(304, 519);
+            Controls.Add(lbISOPercent);
+            Controls.Add(progressBar1);
             Controls.Add(cbBanlist);
             Controls.Add(lbWaitText);
             Controls.Add(lbWarningNote);
@@ -456,5 +500,9 @@
         private CheckBox cbPackPriceRange;
         private CheckBox cbBoxRandomize;
         private CheckBox cbBanlist;
+        private ProgressBar progressBar1;
+        private Label lbISOPercent;
+        private ToolTip toolTip1;
+        private LinkLabel lbToolTipPackCount;
     }
 }

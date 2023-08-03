@@ -1,10 +1,21 @@
+using System;
+using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
+using System.Text;
+using System.Windows.Forms;
+using System.Threading.Tasks;
+using static TFRandomizerGUI.GameInfo;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace TFRandomizerGUI
 {
     public partial class Form1 : Form
     {
-        private bool bTF3FilesExist = false;
+        private bool bFilesExist = false;
+        private GameType selectedGameType = GameType.TF3_EU;
+        StringBuilder ISOPackOutput = new StringBuilder();
+        private bool bCurrentlyPacking = false;
 
         public Form1()
         {
@@ -13,8 +24,8 @@ namespace TFRandomizerGUI
             tbSeed.Text = new Random().Next().ToString();
             tbMinPrice.Text = "10";
             tbMaxPrice.Text = "500";
-            tbMinCount.Text = "5";
-            tbMaxCount.Text = "10";
+            tbMinCount.Text = "1";
+            tbMaxCount.Text = "8";
 
             lbWaitText.Text = "";
 
@@ -22,8 +33,13 @@ namespace TFRandomizerGUI
             tbSeed.TextAcceptor = Int32TextAcceptor;
             tbMinPrice.TextAcceptor = UInt16TextAcceptor;
             tbMaxPrice.TextAcceptor = UInt16TextAcceptor;
-            tbMinCount.TextAcceptor = UInt16TextAcceptor2;
-            tbMaxCount.TextAcceptor = UInt16TextAcceptor2;
+            tbMinCount.TextAcceptor = UInt8TextAcceptor;
+            tbMaxCount.TextAcceptor = UInt8TextAcceptor;
+
+            PopulateComboBox();
+            comboBox1.SelectedItem = selectedGameType;
+
+            toolTip1.SetToolTip(lbToolTipPackCount, "This will affect how many cards there are in a pack.\nWARNING: Going over 8 cards per pack is unstable and can crash the shop!");
         }
         private int ExtractISO(string InFilename, string OutFolder)
         {
@@ -66,13 +82,14 @@ namespace TFRandomizerGUI
             randomizerprocess.WaitForExit();
             return randomizerprocess.ExitCode;
         }
-        int ExtractEHP(string InFilename, string OutFolder)
-        {
-            var ehpprocess = new Process { StartInfo = new ProcessStartInfo { UseShellExecute = false, CreateNoWindow = true, FileName = "ehppack.exe", Arguments = "\"" + InFilename + "\" \"" + OutFolder + "\"" } };
-            ehpprocess.Start();
-            ehpprocess.WaitForExit();
-            return ehpprocess.ExitCode;
-        }
+
+        // int ExtractEHP(string InFilename, string OutFolder)
+        // {
+        //     var ehpprocess = new Process { StartInfo = new ProcessStartInfo { UseShellExecute = false, CreateNoWindow = true, FileName = "ehppack.exe", Arguments = "\"" + InFilename + "\" \"" + OutFolder + "\"" } };
+        //     ehpprocess.Start();
+        //     ehpprocess.WaitForExit();
+        //     return ehpprocess.ExitCode;
+        // }
 
         int PackEHP(string InFolder, string OutFilename)
         {
@@ -84,15 +101,80 @@ namespace TFRandomizerGUI
 
         int PackPSPISO(string Folder, string OutFilename)
         {
-            var startinfo = new ProcessStartInfo { UseShellExecute = false, CreateNoWindow = false, FileName = "mkisofs" };
+            var startinfo = new ProcessStartInfo { UseShellExecute = false, CreateNoWindow = true, FileName = "mkisofs" };
 
+            startinfo.RedirectStandardError = true;
             startinfo.Arguments = "-o \"" + OutFilename + "\" -A \"PSP GAME\" -sysid \"PSP GAME\" -V \"\" -N -noatime -no-pad -max-iso9660-filenames -U " + Folder;
 
             var mkisofsprocess = new Process { StartInfo = startinfo };
-            mkisofsprocess.Start();
-            mkisofsprocess.WaitForExit();
-            return mkisofsprocess.ExitCode;
 
+            mkisofsprocess.ErrorDataReceived += new DataReceivedEventHandler((sender, e) =>
+            {
+                if (!String.IsNullOrEmpty(e.Data))
+                {
+#if DEBUG
+                    Console.WriteLine(e.Data);
+#endif
+                    ISOPackOutput.Append(e.Data + "\n");
+                    if (e.Data.Contains("done"))
+                    {
+                        string percentData = e.Data;
+                        percentData = percentData.Trim();
+                        percentData = percentData.Substring(0, percentData.IndexOf("%"));
+                        if (float.TryParse(percentData, NumberStyles.Float, CultureInfo.InvariantCulture, out float percentage))
+                        {
+                            UpdateProgressBar(percentage, percentData);
+                        }
+                    }
+                    else if (e.Data.Contains("Total"))
+                    {
+                        UpdateProgressBar(100.0f, "100.00");
+                    }
+                }
+            });
+            ISOPackOutput.Clear();
+            mkisofsprocess.Start();
+
+            mkisofsprocess.BeginErrorReadLine();
+            mkisofsprocess.WaitForExit();
+
+            return mkisofsprocess.ExitCode;
+        }
+
+        private void UpdateProgressBar(float percentage, string pctText)
+        {
+            if (progressBar1.InvokeRequired)
+            {
+                progressBar1.Invoke(new Action<float, string>(UpdateProgressBar), percentage, pctText);
+            }
+            else
+            {
+                // Update the ProgressBar value on the UI thread
+                progressBar1.Value = (int)(percentage);
+                lbISOPercent.Text = pctText + '%';
+            }
+        }
+
+        private void OnISOPackComplete(int exitCode)
+        {
+            if (exitCode != 0)
+            {
+                progressBar1.Visible = false;
+                lbISOPercent.Visible = false;
+                lbWaitText.Text = "Error during ISO packing.\nCheck the \"mkisofs.log\" file for more information.";
+                File.WriteAllText("mkisofs.log", ISOPackOutput.ToString());
+                MessageBox.Show("Randomization failed.");
+            }
+            else
+            {
+                lbWaitText.Text = "";
+                MessageBox.Show("Randomization complete!");
+                lbISOPercent.Visible = false;
+                progressBar1.Visible = false;
+            }
+            bCurrentlyPacking = false;
+            btRandomize.Enabled = true;
+            btInitSetup.Enabled = true;
         }
 
         private void PrepareGameData(string InFilename, string OutFolder)
@@ -108,20 +190,24 @@ namespace TFRandomizerGUI
                 Directory.Delete(ISOoutfolder, true);
                 Directory.CreateDirectory(ISOoutfolder);
             }
-
+            lbWaitText.Text = "Extracting ISO, please wait...";
+            lbWaitText.Visible = true;
             ExtractISO(InFilename, ISOoutfolder);
+            lbWaitText.Visible = false;
             //File.Copy(EBOOTfile, EBOOTdest, true);
         }
 
         private void InitializerOpenFile(string FileName)
         {
-            // TODO: add support for other games
-            PrepareGameData(FileName, "TF3");
-            bTF3FilesExist = true;
+            PrepareGameData(FileName, GameInfo.GameShortNames[selectedGameType]);
+            bFilesExist = true;
         }
 
         private void StartRandomizer(string GameFolder, string OutISOName)
         {
+            btRandomize.Enabled = false;
+            btInitSetup.Enabled = false;
+            bCurrentlyPacking = true;
             int theseed = Int32.Parse(tbSeed.Text);
 
             string EBOOTfile = GameFolder + "/EBOOT.BIN";
@@ -152,6 +238,12 @@ namespace TFRandomizerGUI
                 // pack and copy ehp to disc root
                 PackEHP(OutRecipeFolder, OutRecipeEHP);
             }
+            else
+            {
+                string RecipeFolder = GameFolder + "/recipes";
+                string OutRecipeEHP = GameFolder + "/gamedata/recipes.ehp";
+                PackEHP(RecipeFolder, OutRecipeEHP);
+            }
 
             if (cbBoxRandomize.Checked)
             {
@@ -174,14 +266,13 @@ namespace TFRandomizerGUI
 
                 if (cbPackCountRange.Checked)
                 {
-                    MinCount = Int16.Parse(tbMinCount.Text);
-                    MaxCount = Int16.Parse(tbMaxCount.Text);
+                    MinCount = byte.Parse(tbMinCount.Text);
+                    MaxCount = byte.Parse(tbMaxCount.Text);
                 }
 
-                // TODO: add support for other games - currently this is using TF3 offsets
-                int BoxInfoOffset = 0x20324;
-                int SegmentOffset = 0x54;
-                int BoxCount = 48;
+                int BoxInfoOffset = GameShopInfo.BoxInfoOffsets[selectedGameType];
+                int SegmentOffset = GameShopInfo.SegmentOffsets[selectedGameType];
+                int BoxCount = GameShopInfo.BoxCounts[selectedGameType];
 
                 if (DoTFRandomizer_Shop(CardIDListFile, ShopPRXFile, BoxInfoOffset, SegmentOffset, BoxCount, MinPrice, MaxPrice, MinCount, MaxCount, OutShopPrxFile, theseed) != 0)
                 {
@@ -189,20 +280,28 @@ namespace TFRandomizerGUI
                     return;
                 }
             }
+            else
+            {
+                string ShopPRXFile = GameFolder + "/rel_shop.prx";
+                string OutShopPrxFile = GameFolder + "/gamedata/PSP_GAME/USRDIR/gmodule/rel_shop.prx";
+                File.Copy(ShopPRXFile, OutShopPrxFile, true);
+            }
 
             if (cbDeckRandom.Checked || cbPackPriceRange.Checked || cbPackCountRange.Checked)
             {
                 string discRootPath = GameFolder + "/gamedata";
                 //lbWaitText.Visible = true;
-                lbWaitText.Text = "Packing ISO, please wait...\nCheck the console window if it appears stuck.";
-                if (PackPSPISO(discRootPath, OutISOName) != 0)
-                {
-                    lbWaitText.Text = "Error during ISO packing.";
-                    return;
-                }
-                //lbWaitText.Visible = false;
+                lbWaitText.Text = "Packing ISO, please wait...";
+                lbISOPercent.Text = "0.00%";
+                progressBar1.Value = 0;
+                lbISOPercent.Visible = true;
+                progressBar1.Visible = true;
+
+                Task.Run(() => PackPSPISO(discRootPath, OutISOName))
+            .ContinueWith(task => OnISOPackComplete(task.Result),
+                          TaskScheduler.FromCurrentSynchronizationContext());
+
             }
-            lbWaitText.Text = "";
         }
 
         private bool Int32TextAcceptor(string oldText, string newText, string input, int offset, int length)
@@ -217,13 +316,13 @@ namespace TFRandomizerGUI
             return UInt16.TryParse(newText, out value);
         }
 
-        private bool UInt16TextAcceptor2(string oldText, string newText, string input, int offset, int length)
+        private bool UInt8TextAcceptor(string oldText, string newText, string input, int offset, int length)
         {
-            UInt16 value = 0;
+            byte value = 0;
 
-            if (UInt16.TryParse(newText, out value))
+            if (byte.TryParse(newText, out value))
             {
-                if ((value * 4) <= 0xFFFF)
+                if ((value * 4) <= 0xFF)
                     return true;
             }
 
@@ -237,8 +336,8 @@ namespace TFRandomizerGUI
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            if (Directory.Exists("TF3/gamedata/PSP_GAME"))
-                bTF3FilesExist = true;
+            if (Directory.Exists(GameInfo.GameShortNames[selectedGameType] + "/gamedata/PSP_GAME"))
+                bFilesExist = true;
         }
 
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
@@ -255,12 +354,12 @@ namespace TFRandomizerGUI
 
         private void timer1_Tick(object sender, EventArgs e)
         {
-            if ((!cbPackPriceRange.Checked && !cbPackCountRange.Checked && !cbDeckRandom.Checked) || !bTF3FilesExist)
+            if ((!cbPackPriceRange.Checked && !cbPackCountRange.Checked && !cbDeckRandom.Checked) || !bFilesExist || bCurrentlyPacking)
                 btRandomize.Enabled = false;
             else
                 btRandomize.Enabled = true;
 
-            if (!bTF3FilesExist)
+            if (!bFilesExist)
                 lbWarningNote.Visible = true;
             else
                 lbWarningNote.Visible = false;
@@ -279,8 +378,8 @@ namespace TFRandomizerGUI
                 if (File.Exists(sfDialogRandomizer.FileName))
                     File.Delete(sfDialogRandomizer.FileName);
 
-                StartRandomizer("TF3", sfDialogRandomizer.FileName);
-                MessageBox.Show("Randomization complete!");
+                StartRandomizer(GameInfo.GameShortNames[selectedGameType], sfDialogRandomizer.FileName);
+                //MessageBox.Show("Randomization complete!");
             }
         }
 
@@ -306,6 +405,35 @@ namespace TFRandomizerGUI
             tbMinCount.Enabled = cbBoxRandomize.Checked;
             tbMaxPrice.Enabled = cbBoxRandomize.Checked;
             tbMaxCount.Enabled = cbBoxRandomize.Checked;
+        }
+
+        private void PopulateComboBox()
+        {
+            foreach (GameType gameType in Enum.GetValues(typeof(GameType)))
+            {
+                string description = EnumHelper.GetEnumDescription(gameType);
+                comboBox1.Items.Add(description);
+            }
+        }
+
+        private void comboBox1_SelectionChangeCommitted(object sender, EventArgs e)
+        {
+            string selectedDescription = comboBox1.SelectedItem.ToString();
+
+            // Find the matching enum value based on the description
+            foreach (GameType gameType in Enum.GetValues(typeof(GameType)))
+            {
+                if (selectedDescription == EnumHelper.GetEnumDescription(gameType))
+                {
+                    selectedGameType = gameType;
+                    break;
+                }
+            }
+
+            if (Directory.Exists(GameInfo.GameShortNames[selectedGameType] + "/gamedata/PSP_GAME"))
+                bFilesExist = true;
+            else
+                bFilesExist = false;
         }
     }
 }

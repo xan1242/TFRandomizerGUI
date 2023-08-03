@@ -1,3 +1,6 @@
+using System.ComponentModel;
+using System.Globalization;
+using System.Reflection;
 using System.Runtime.InteropServices;
 
 namespace TFRandomizerGUI
@@ -42,12 +45,79 @@ namespace TFRandomizerGUI
             // see https://aka.ms/applicationconfiguration.
             ApplicationConfiguration.Initialize();
 #if DEBUG
-            //NativeMethods.AllocConsole();
+            NativeMethods.AllocConsole();
 #endif
             Application.Run(new Form1());
 #if DEBUG
-            //NativeMethods.FreeConsole();
+            NativeMethods.FreeConsole();
 #endif
+        }
+    }
+
+    public static class EnumHelper
+    {
+        public static string GetEnumDescription(Enum value)
+        {
+            FieldInfo fieldInfo = value.GetType().GetField(value.ToString());
+
+            if (fieldInfo != null)
+            {
+                DescriptionAttribute[] attributes = (DescriptionAttribute[])fieldInfo.GetCustomAttributes(typeof(DescriptionAttribute), false);
+                return attributes.Length > 0 ? attributes[0].Description : value.ToString();
+            }
+
+            return value.ToString();
+        }
+    }
+
+
+    public class GameInfo
+    {
+        public enum GameType
+        {
+            [Description("Tag Force 3 (ULES-01183)")]
+            TF3_EU,
+
+            [Description("Tag Force 5 (ULUS-10555)")]
+            TF5_US,
+        }
+
+        public static Dictionary<GameType, string> GameShortNames = new Dictionary<GameType, string>()
+        {
+            { GameType.TF3_EU , "TF3_EU"},
+            { GameType.TF5_US , "TF5_US"},
+        };
+    }
+
+    public class GameShopInfo
+    {
+        public int BoxInfoOffset;
+        public int SegmentOffset;
+        public int BoxCount;
+
+        public static Dictionary<GameInfo.GameType, int> BoxInfoOffsets = new Dictionary<GameInfo.GameType, int>()
+        {
+            { GameInfo.GameType.TF3_EU , 0x2031C},
+            { GameInfo.GameType.TF5_US , 0x23090},
+        };
+
+        public static Dictionary<GameInfo.GameType, int> SegmentOffsets = new Dictionary<GameInfo.GameType, int>()
+        {
+            { GameInfo.GameType.TF3_EU , 0x54},
+            { GameInfo.GameType.TF5_US , 0x54},
+        };
+
+        public static Dictionary<GameInfo.GameType, int> BoxCounts = new Dictionary<GameInfo.GameType, int>()
+        {
+            {  GameInfo.GameType.TF3_EU , 48},
+            {  GameInfo.GameType.TF5_US , 60},
+        };
+
+        GameShopInfo()
+        {
+            BoxInfoOffset = 0;
+            SegmentOffset = 0;
+            BoxCount = 0;
         }
     }
 }

@@ -6,11 +6,11 @@ With this utility, you can easily randomize deck recipes and the card shop boxes
 
 ## Compatibility
 
-Currently this tool only supports Tag Force 3. More games are to come as their parameters are discovered and recipe loader code is written.
+Currently this tool only supports Tag Force 3 and 5. More games are to come as their parameters are discovered and recipe loader code is written.
 
 ## Usage
 
-1. Perform the initial setup with the button at the bottom of the window using a supported game (at the time of writing it's only Tag Force 3 ULES-01183)
+1. Perform the initial setup with the button at the bottom of the window using a supported game (at the time of writing it's only Tag Force 3 ULES-01183 and Tag Force 5 ULUS-10555)
 
 2. Adjust your parameters
 
@@ -20,13 +20,7 @@ Currently this tool only supports Tag Force 3. More games are to come as their p
 
 5. Load the ISO in your emulator of choice (real PSP hardware untested, TODO)
 
-
-
 To see the effects of the recipe randomizer, you must start a new game. The recipe randomization will not work on a saved game.
-
-
-
-
 
 ## Requirements
 
@@ -43,3 +37,5 @@ To see the effects of the recipe randomizer, you must start a new game. The reci
 - Lots and lots of testing
 
 - More randomization features (this is entirely dependant on TFRandomizer)
+
+- Make post-build scripts and auto building of TFRandomizer within the VS solution!

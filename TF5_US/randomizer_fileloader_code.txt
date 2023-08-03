@@ -1,0 +1,156 @@
+typedef struct SceIoStat {
+        SceMode                 st_mode; - int // 0x0
+        unsigned int    st_attr; // 0x4
+        SceOff                  st_size; - int64 // 0x8
+        ScePspDateTime  st_ctime; - 16 bytes // 0x10
+        ScePspDateTime  st_atime; - 16 bytes // 0x20
+        ScePspDateTime  st_mtime; - 16 bytes // 0x30
+        unsigned int    st_private[6]; // 0x40
+} SceIoStat (size: 0x58 bytes)
+
+============FUNCTION MAP==============
+@mem:  / memmap: 0x08871F6C = sceIoOpen(const char *file, int flags, SceMode mode), return sceUID
+@mem:  / memmap: 0x08871EE4 = sceIoClose(SceUID fd)
+@mem:  / memmap: 0x08871ECC = sceIoRead(SceUID fd, void *data, SceSize size)
+@mem:  / memmap: 0x08871F14 = sceIoGetstat(const char *file, SceIoStat *stat)
+@mem:  / memmap: 0x088720BC = sceKernelCreateFpl(const char *name, int part, int attr, unsigned int size, unsigned int blocks, struct SceKernelFplOptParam *opt), returns SceUID
+@mem:  / memmap: 0x0887211C = sceKernelAllocateFpl(SceUID uid, void **data, unsigned int *timeout), return 0 on success
+@mem: 0x0001E654 / memmap: 0x8822654 = EhFolder_CreateFromMemory(int unk, void *data)
+@mem: 0x0001E994 / memmap: 0x8822994 = EhFolder_SearchFile(void* ehfolder, char* filename, int unk)
+============FUNCTION MAP==============
+
+stolen memory area: 001133B0 - this is where the EHP resides normally
+space: 1D840
+file: 0x113404
+
+path: disc0:/recipes.ehp
+
+======MEMORY MAP=========
+@mem: 001133B0 / memmap: 0x89173B0 = recipes datapointer
+@file: 00113408 / mem: 001133B4 / memmap: 0x89173B4 = "disc0:/recipes.ehp" (size: 19 chars, 0x14 bytes for alignment)
+@mem: 001133D0 / memmap: 0x89173D0 = SceIoStat st
+@file: 001134A4 / mem: 00113450 / memmap: 0x8917450 = code 
+@mem: 00073064 / memmap: 0x8877064 = "\0"
+======MEMORY MAP=========
+
+=========LoadRecipeEhp()=================
+address: 0x8917450
+
+LoadRecipeEhp() pseudocode:
+
+register map:
+s0 = filesize
+s1 = uid_file
+
+sceIoGetstat(0x89173B4, 0x89173D0);
+filesize = *(uint32_t*)(0x89173D0 + 8);
+uid_mem = sceKernelCreateFpl(0x8877064, 2, 0, filesize, 1, NULL);
+sceKernelAllocateFpl(uid_mem, 0x89173B0, 0); // pass uid_mem via "v0" directly
+uid_file = sceIoOpen(0x89173B4, 1, 0);
+sceIoRead(uid_file, *(void**)0x89173B0, filesize);
+sceIoClose(uid_file);
+
+MIPS code:
+
+sw ra, 0(sp)                                                                         | AFBF0000
+																					 | 
+// sceIoGetstat(0x89173B4, 0x89173D0);                                               | 
+lui a0, 0x0891                                                                       | 3C040891
+addiu a0, 0x73B4                                                                     | 248473B4
+lui a1, 0x0891                                                                       | 3C050891
+jal sceIoGetstat                                                                     | 0E21C7C5
+addiu a1, 0x73D0                                                                     | 24A573D0
+// get filesize into s0                                                              | 
+lui s0, 0x0891                                                                       | 3C100891
+addiu s0, 0x73D0                                                                     | 261073D0
+lw s0, 8(s0)                                                                         | 8E100008
+// uid_mem = sceKernelCreateFpl(0x8877064, 2, 0, filesize, 1, NULL);                 | 
+lui a0, 0x0887                                                                       | 3C040887
+addiu a0, 0x7064                                                                     | 24847064
+li a1, 2                                                                             | 34050002
+move a2, zero                                                                        | 00003021
+move a3, s0                                                                          | 02003821
+li t0, 1                                                                             | 34080001
+jal sceKernelCreateFpl                                                               | 0E21C82F
+move t1, zero                                                                        | 00004821
+// sceKernelAllocateFpl(uid_mem, 0x89173B0, 0); // pass uid_mem via "v0" directly    | 
+move a0, v0                                                                          | 00402021
+lui a1, 0x0891                                                                       | 3C050891
+addiu a1, 0x73B0                                                                     | 24A573B0
+jal sceKernelAllocateFpl                                                             | 0E21C847 // 21
+move a2, zero                                                                        | 00003021
+// uid_file = sceIoOpen(0x89173B4, 1, 0);                                            | 
+lui a0, 0x0891                                                                       | 3C040891
+addiu a0, 0x73B4                                                                     | 248473B4
+li a1, 1                                                                             | 34050001
+jal sceIoOpen                                                                        | 0E21C7DB // 26
+move a2, zero                                                                        | 00003021
+// get uid_file into s1                                                              | 
+move s1, v0                                                                          | 00408821
+// sceIoRead(uid_file, *(void**)0x89173B0, filesize);                                | 
+move a0, s1                                                                          | 02202021
+lui a1, 0x0891                                                                       | 3C050891
+addiu a1, 0x73B0                                                                     | 24A573B0
+lw a1, 0(a1)                                                                         | 8CA50000
+jal sceIoRead                                                                        | 0E21C7B3
+move a2, s0                                                                          | 02003021
+// sceIoClose(uid_file);                                                             | 
+jal sceIoClose                                                                       | 0E21C7B9
+move a0, s1                                                                          | 02202021
+																					 | 
+jr ra                                                                                | 03E00008
+lw ra, 0(sp)                                                                         | 8FBF0000
+=========LoadRecipeEhp()=================
+
+=====EhFolder_CreateFromMemory_Hook(int unk, void *data)=====
+
+address: 0x89174E8 / 0x1134E8
+
+pseudocode:
+
+LoadRecipeEhp();
+EhFolder_CreateFromMemory(0, *(void**)0x89173B0);
+
+MIPS code:
+
+move s3, ra                                                                          | 03E09821
+jal LoadRecipeEhp                                                                    | 0E245D14
+nop                                                                                  | 00000000
+move a0, zero                                                                        | 00002021
+move ra, s3                                                                          | 0260F821
+lui a1, 0x0891                                                                       | 3C050891
+addiu a1, 0x73B0                                                                     | 24A573B0
+j EhFolder_CreateFromMemory                                                          | 0A208995
+lw a1, 0(a1)                                                                         | 8CA50000
+
+=====EhFolder_CreateFromMemory_Hook(int unk, void *data)=====
+
+==EhFolder_SearchFile_Hook(void* ehfolder, char* filename, int unk)==
+
+address: 0x891750C / 0x11350C
+
+pseudocode:
+EhFolder_SearchFile(*(void**)0x89173B0, filename, unk)
+
+MIPS code:
+
+lui a0, 0x0891                                                                       | 3C040891
+addiu a0, 0x73B0                                                                     | 248473B0
+j EhFolder_SearchFile                                                                | 0A208A65
+lw a0, 0(a0)                                                                         | 8C840000
+
+==EhFolder_SearchFile_Hook(void* ehfolder, char* filename, int unk)==
+
+===ENTRYPOINTS===
+
+They have to be calls to NON mapped addresses!
+
+@file: 2F74C / mem: 0x0002F6F8 / memmap: 0x88336F8
+jal EhFolder_CreateFromMemory_Hook                                                   | 0C044D3A 3A 4D 04 0C
+
+@file: 59B34 / mem: 0x00059AE0 / memmap: 0x885DAE0
+@file: 59B78 / mem: 0x00059B24 / memmap: 0x885DB24
+@file: 59BEC / mem: 0x00059B98 / memmap: 0x885DB98
+jal EhFolder_SearchFile_Hook                                                         | 0C044D43 43 4D 04 0C
+
+===ENTRYPOINTS===
